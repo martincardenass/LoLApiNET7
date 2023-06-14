@@ -1,6 +1,7 @@
 ﻿using LoLApiNET7.Models;
 using LoLApiNET7.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.RegularExpressions;
 
 namespace LoLApiNET7.Controllers
 {
@@ -67,6 +68,76 @@ namespace LoLApiNET7.Controllers
             }
 
             return Ok(region);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateRegion([FromBody] Region region)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!_regionService.CreateRegion(region))
+            {
+                ModelState.AddModelError("", "Sorry. Something went wrong while creating the region");
+                return StatusCode(500, ModelState);
+            }
+            return NoContent();
+        }
+
+        [HttpDelete("id/{regId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteRegion(int regId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if(!_regionService.RegionIdExists(regId))
+                return BadRequest("The id " + regId + " does not exist or was already deleted.");
+            
+            var regionToDelete = _regionService.GetRegionById(regId);
+
+            if(!_regionService.DeleteRegion(regionToDelete))
+            {
+                ModelState.AddModelError("", "Something happened while deleting region");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
+
+        [HttpPatch("id/{regId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateRegion(int regId, [FromBody] Region updatedRegion)
+        {
+            if (updatedRegion == null)
+                return BadRequest(ModelState);
+
+            if (!_regionService.RegionIdExists(regId))
+                return BadRequest("Role does not exist " + ModelState);
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var regionMap = _regionService.GetRegionById(regId);
+
+            regionMap.Name = updatedRegion.Name ?? regionMap.Name; // Validating each field. If no value is provided, it wont be updated.
+            regionMap.Description = updatedRegion.Description ?? regionMap.Description;
+
+            if (!_regionService.UpdateRegion(regionMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while updating the region");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
         }
     }
 }

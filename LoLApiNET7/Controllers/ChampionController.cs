@@ -177,7 +177,7 @@ namespace LoLApiNET7.Controllers
 
             if (!_championService.UpdateChampion(RegionId, RoleId, championMap))
             {
-                ModelState.AddModelError("", "Something went wrong while updating the champion.");
+                ModelState.AddModelError("", "Something went wrong while updating the champion");
                 return StatusCode(500, ModelState);
             }
 

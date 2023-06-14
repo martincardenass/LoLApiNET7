@@ -93,12 +93,17 @@ namespace LoLApiNET7.Controllers
         [ProducesResponseType(404)]
         public IActionResult DeleteRole(int roleId)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             if (!_roleService.RoleIdExists(roleId))
                 return BadRequest("The id " + roleId + " does not exist or was already deleted.");
 
             var roleToDelete = _roleService.GetRoleById(roleId);
 
-            if(_roleService.DeleteRole(roleToDelete))
+            if(!_roleService.DeleteRole(roleToDelete))
             {
                 ModelState.AddModelError("", "Something happened while deleting role");
                 return StatusCode(500, ModelState);
