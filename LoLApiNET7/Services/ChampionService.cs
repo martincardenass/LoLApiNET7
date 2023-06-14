@@ -1,5 +1,4 @@
-﻿using LoLApiNET7.Dto;
-using LoLApiNET7.Models;
+﻿using LoLApiNET7.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace LoLApiNET7.Services

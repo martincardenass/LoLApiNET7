@@ -13,9 +13,9 @@ namespace LoLApiNET7.Models
         public string? Image { get; set; } // ? means that is nullable
         [ForeignKey("Region")]
         public int Region_id { get; set; }
-        public ICollection<Region>? Regions { get; set; }
+        //public ICollection<Region> Region { get; set; }
         [ForeignKey("Role")]
         public int Role_id { get; set; }
-        public ICollection<Role>? Roles { get; set; }
+        //public ICollection<Role> Role { get; set; }
     }
 }

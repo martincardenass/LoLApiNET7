@@ -68,5 +68,70 @@ namespace LoLApiNET7.Controllers
 
             return Ok(role);
         }
+
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateRole([FromBody]  Role role)
+        {
+            if(!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if(!_roleService.CreateRole(role))
+            {
+                ModelState.AddModelError("", "Something happened while adding role");
+                return StatusCode(500, ModelState);
+            }
+            return NoContent();
+        }
+
+        [HttpDelete("id/{roleId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteRole(int roleId)
+        {
+            if (!_roleService.RoleIdExists(roleId))
+                return BadRequest("The id " + roleId + " does not exist or was already deleted.");
+
+            var roleToDelete = _roleService.GetRoleById(roleId);
+
+            if(_roleService.DeleteRole(roleToDelete))
+            {
+                ModelState.AddModelError("", "Something happened while deleting role");
+                return StatusCode(500, ModelState);
+            }
+            return NoContent();
+        }
+
+        [HttpPatch("id/{roleId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateRole(int roleId, [FromBody] Role updatedRole)
+        {
+            if (updatedRole == null || updatedRole.Name == "")
+                return BadRequest("Body cannot be empty " + ModelState);
+
+            if (!_roleService.RoleIdExists(roleId))
+                return BadRequest("Role does not exist " + ModelState);
+
+            if(!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var roleMap = _roleService.GetRoleById(roleId);
+
+            roleMap.Name = updatedRole.Name;
+
+            if (!_roleService.UpdateRole(roleMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while updating the role");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
     }
 }

@@ -10,6 +10,10 @@ namespace LoLApiNET7.Services
         Role GetRoleByName(string name);
         bool RoleIdExists(int id);
         bool RoleNameExists(string name);
+        bool CreateRole(Role role);
+        bool DeleteRole(Role role);
+        bool UpdateRole(Role role);
+        bool Save();
     }
 
     public class RoleService : IRoleService
@@ -18,6 +22,23 @@ namespace LoLApiNET7.Services
         public RoleService(AppDbContext context)
         {
             _context = context;
+        }
+
+        public bool CreateRole(Role role)
+        {
+            var roleInsert = new Role()
+            {
+                Name = role.Name
+            };
+
+            _context.Add(roleInsert);
+            return Save();
+        }
+
+        public bool DeleteRole(Role role)
+        {
+            _context.Remove(role);
+            return Save();
         }
 
         public Role GetRoleById(int id)
@@ -43,6 +64,17 @@ namespace LoLApiNET7.Services
         public bool RoleNameExists(string name)
         {
             return _context.Roles.Any(r => EF.Functions.Like(r.Name, $"%{name}%"));
+        }
+
+        public bool Save()
+        {
+            return _context.SaveChanges() > 0 ? true : false;
+        }
+
+        public bool UpdateRole(Role role)
+        {
+            _context.Update(role);
+            return Save();
         }
     }
 }

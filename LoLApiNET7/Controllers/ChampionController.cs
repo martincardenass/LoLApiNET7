@@ -140,7 +140,7 @@ namespace LoLApiNET7.Controllers
                 ModelState.AddModelError("", "Sorry. Something went wrong while deleting the champion.");
                 return StatusCode(500, ModelState);
             }
-            return Ok("Deleted " + championToDelete.Champion_id);
+            return NoContent();
         }
 
         [HttpPatch("id/{champId}")]
