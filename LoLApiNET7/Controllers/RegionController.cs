@@ -1,7 +1,6 @@
 ﻿using LoLApiNET7.Models;
 using LoLApiNET7.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.RegularExpressions;
 
 namespace LoLApiNET7.Controllers
 {

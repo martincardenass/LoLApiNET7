@@ -13,7 +13,7 @@ namespace LoLApiNET7.Controllers
         private readonly IRegionService _regionService;
         private readonly IRoleService _roleService;
 
-        public ChampionController(IChampionService championService, IRegionService regionService, IRoleService roleService)
+        public ChampionController(IChampionService championService, IRegionService regionService, IRoleService roleService) //Getting the dependencies that we need
         {
             _championService = championService;
             _regionService = regionService;
