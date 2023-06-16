@@ -70,7 +70,7 @@ namespace LoLApiNET7.Services
 
         public bool Save()
         {
-            return _context.SaveChanges() > 0 ? true : false;
+            return _context.SaveChanges() > 0;
         }
 
         public bool UpdateRegion(Region region)
