@@ -1,5 +1,6 @@
 ﻿using LoLApiNET7.Models;
 using LoLApiNET7.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LoLApiNET7.Controllers
@@ -70,6 +71,7 @@ namespace LoLApiNET7.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "UserAllowed")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         public IActionResult CreateRegion([FromBody] Region region)
@@ -86,6 +88,7 @@ namespace LoLApiNET7.Controllers
         }
 
         [HttpDelete("id/{regId}")]
+        [Authorize(Policy = "AdminOnly")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
@@ -111,6 +114,7 @@ namespace LoLApiNET7.Controllers
         }
 
         [HttpPatch("id/{regId}")]
+        [Authorize(Policy = "AdminOnly")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]

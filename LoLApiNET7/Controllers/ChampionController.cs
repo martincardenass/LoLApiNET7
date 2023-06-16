@@ -1,10 +1,11 @@
 ﻿using LoLApiNET7.Dto;
 using LoLApiNET7.Models;
 using LoLApiNET7.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LoLApiNET7.Controllers
-{
+{   //AUTHORIZE = Login and add Bearer Token, also send body
     [Route("api/[controller]")]
     [ApiController]
     public class ChampionController : Controller
@@ -105,6 +106,7 @@ namespace LoLApiNET7.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "UserAllowed")] //users and admins can create champions
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         public IActionResult CreateChampion([FromQuery] int RegionId, [FromQuery] int RoleId, [FromBody] Champion champion)
@@ -125,6 +127,7 @@ namespace LoLApiNET7.Controllers
         }
 
         [HttpDelete("id/{champId}")]
+        [Authorize(Policy = "AdminOnly")] //Only admins can delete
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
@@ -144,6 +147,7 @@ namespace LoLApiNET7.Controllers
         }
 
         [HttpPatch("id/{champId}")]
+        [Authorize(Policy = "AdminOnly")] //Only admins can delete
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
