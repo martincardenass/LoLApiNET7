@@ -10,6 +10,8 @@ namespace LoLApiNET7
             
         }
         public DbSet<Champion> Champions { get; set; }
+        public DbSet<ChampionInfo> ChampionsInfo { get; set; }
+        public DbSet<Review> Reviews { get; set; }
         public DbSet<Region> Regions { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<User> Users { get; set; }

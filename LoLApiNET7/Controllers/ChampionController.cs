@@ -49,6 +49,18 @@ namespace LoLApiNET7.Controllers
             return Ok(championsDto);
         }
 
+        [HttpGet("ChampionsInfo")]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<ChampionInfo>))]
+        public IActionResult GetChampionsInfo()
+        {
+            var championsInfo = _championService.GetChampionsInfo();
+
+            if(!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            return Ok(championsInfo);
+        }
+
         [HttpGet("id/{champId}")]
         [ProducesResponseType(200, Type = typeof(Champion))]
         [ProducesResponseType(400)]
@@ -152,7 +164,7 @@ namespace LoLApiNET7.Controllers
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
         public IActionResult UpdateChampion(int champId, [FromQuery] int RegionId, [FromQuery] int RoleId, [FromBody] ChampionDto updatedChampion)
-        {
+        { // dont forget to pass champion_id in the send body, otherwise it will not work
             if (!_championService.ChampionIdExists(champId)) //checking if the champId from query exists
             {
                 var errorMsg = "A champion with Id: " + champId + " Does not exist"; // could use string interpolation here

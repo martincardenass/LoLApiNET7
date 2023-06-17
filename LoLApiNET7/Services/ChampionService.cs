@@ -6,6 +6,7 @@ namespace LoLApiNET7.Services
     public interface IChampionService
     {
         ICollection<Champion> GetChampions(); //Get the list of champions
+        ICollection<ChampionInfo> GetChampionsInfo(); // Gets the VIEW of the champions. which contains its regions and roles names instead of its ids.
         Champion GetChampionById(int id); //Get a champion by its Id
         Champion GetChampionByName(string name); //Get a champion by its Name
         bool ChampionIdExists(int id);
@@ -126,6 +127,11 @@ namespace LoLApiNET7.Services
 
             _context.Update(existingChampion);
             return Save();
+        }
+
+        public ICollection<ChampionInfo> GetChampionsInfo()
+        {
+            return _context.ChampionsInfo.OrderBy(ci => ci.Champion_Id).ToList();
         }
     }
 }

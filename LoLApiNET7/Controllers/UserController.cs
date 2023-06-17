@@ -72,6 +72,7 @@ namespace LoLApiNET7.Controllers
 
             var token = _userService.CreateToken(userLogin); //Creating the token
 
+            //return Ok(new { Token = token });
             return Ok(token); //returning the token
         }
     }

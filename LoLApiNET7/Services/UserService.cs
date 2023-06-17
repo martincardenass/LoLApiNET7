@@ -12,11 +12,13 @@ namespace LoLApiNET7.Services
         ICollection<User> GetUsers();
         User GetUser(string username);
         string CreateToken(User user);
+        //string DecodeToken(JwtSecurityToken securityToken);
         string GetPassword(string username);
         User Authenticate(UserDto user);
         //string Login(UserDto user);
         //User EncryptPassword(User user);
         bool UserExists(string username);
+        bool UserExistsId(int id); //check if user exists by its Id. Created to use in the reviews.
         bool EmailExists(string email);
         bool CreateUser(User user);
         bool Save();
@@ -40,7 +42,8 @@ namespace LoLApiNET7.Services
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, u.Username),
+                new Claim(ClaimTypes.NameIdentifier, u.User_Id.ToString()), //Convert the userId to string to be able to create a Claim
+                new Claim(ClaimTypes.Name, u.Username),
                 new Claim(ClaimTypes.Email, u.Email),
                 new Claim(ClaimTypes.Role, u.Role)
             };
@@ -49,7 +52,7 @@ namespace LoLApiNET7.Services
                 _config["Jwt:Issuer"],
                 _config["Jwt:Audience"],
                 claims,
-                expires: DateTime.Now.AddMinutes(15), // Expires in 15 minutes
+                expires: DateTime.Now.AddDays(7), // Expires in 7 days = 1 week
                 signingCredentials: credentials
                 );
 
@@ -124,7 +127,17 @@ namespace LoLApiNET7.Services
         public string GetPassword(string username)
         {
             return _context.Users.Where(p => p.Username == username).First().Password; //Get the password
-        } 
+        }
+
+        public bool UserExistsId(int id)
+        {
+            return _context.Users.Any(u => u.User_Id == id);
+        }
+
+        //public string DecodeToken(JwtSecurityToken securityToken)
+        //{
+        //    var createdToken = CreateToken
+        //}
         //public string Login(UserDto user)
         //{
         //    var logged = Authenticate(user);
