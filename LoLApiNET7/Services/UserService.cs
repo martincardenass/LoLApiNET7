@@ -12,6 +12,7 @@ namespace LoLApiNET7.Services
         ICollection<User> GetUsers();
         User GetUser(string username);
         string CreateToken(User user);
+        int DecodeToken(string token);
         //string DecodeToken(JwtSecurityToken securityToken);
         string GetPassword(string username);
         User Authenticate(UserDto user);
@@ -134,17 +135,19 @@ namespace LoLApiNET7.Services
             return _context.Users.Any(u => u.User_Id == id);
         }
 
-        //public string DecodeToken(JwtSecurityToken securityToken)
-        //{
-        //    var createdToken = CreateToken
-        //}
-        //public string Login(UserDto user)
-        //{
-        //    var logged = Authenticate(user);
+        public int DecodeToken(string token)
+        { // Decodes the token and gets the User Id
+            JwtSecurityTokenHandler tokenHandler = new(); // create the token handler
+            JwtSecurityToken jwtToken = tokenHandler.ReadJwtToken(token); // read the token
 
-        //    var token = CreateToken(logged);
+            //Create a userIdString that gets the value of the ID stored in the token.
+            string userIdString = jwtToken.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
 
-        //    return token;
-        //}
+            //To be able to use it. We convert it to an integer
+            _ = int.TryParse(userIdString, out int userIdInt);
+
+            //and we return the integer.
+            return userIdInt;
+        }
     }
 }

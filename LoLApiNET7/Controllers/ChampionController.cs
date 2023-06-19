@@ -182,7 +182,7 @@ namespace LoLApiNET7.Controllers
                 var errorMsg = "A role with Id: " + RoleId + " Does not exist"; // could use string interpolation here
                 return NotFound(new { Message = errorMsg });
             }
-
+            
             if (champId != updatedChampion.Champion_id) return BadRequest(); // if the ids from query and body dont match, return bad request
 
             var championMap = _championService.GetChampionById(champId); //getting the original value of the champion before editing it
