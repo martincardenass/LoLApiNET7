@@ -12,8 +12,9 @@ namespace LoLApiNET7.Services
         bool CreateReview(byte Rating, int ChampionId, Review review);
         bool UpdateReview(int ReviewId, byte NewRating, Review review);
         bool DeleteReview(int ReviewId, Review review); // We need a ReviewId to get the UserId within it. And compare it to the token that is trying to delete it
-        string GetToken();
+        string GetToken(); // I might need to move this to the user service. I dont think it belongs here.
         bool CompareUserIds(int ReviewId);
+        bool IsUserAdmin();
         bool Save();
     }
     public class ReviewService : IReviewService
@@ -23,7 +24,7 @@ namespace LoLApiNET7.Services
         private readonly IHttpContextAccessor _accesor;
 
         public ReviewService(AppDbContext context, IUserService userService, IHttpContextAccessor accesor)
-        {
+        { // Injecting the services that we need. HttpContext its to get access to the http headers.
             _context = context;
             _userService = userService;
             _accesor = accesor;
@@ -76,17 +77,18 @@ namespace LoLApiNET7.Services
             return Save();
         }
 
-        public bool DeleteReview(int ReviewId, Review review)
+        public bool DeleteReview(int ReviewId, Review review) // I might not need "review" here since I am deleting from its ID.
         {
             var reviewToDelete = _context.Reviews.Find(ReviewId); // Get the review we want to delete
 
-            if (CompareUserIds(ReviewId) == true)
+            // Check if the userId of the token its the same as the UserId in the Review, OR if the user is an admin
+            if (CompareUserIds(ReviewId) == true || IsUserAdmin())
             {
-                _context.Remove(reviewToDelete);
-                return Save();
+                _context.Remove(reviewToDelete); // If any of the two conditions are met. Delete.
+                return Save(); // And save.
             }
             else
-                return false;
+                return false; // If none of the two are met, return false and will cause a 500 server error. Nothing will be deleted.
         }
 
         public Review[] GetChampionReviews(int id)
@@ -112,6 +114,17 @@ namespace LoLApiNET7.Services
             return bearerToken; // Return the token
         }
 
+        public bool IsUserAdmin()
+        {
+            string userRoleFromToken = _userService.DecodeTokenRole(GetToken()).ToString(); // Gets a string that contains either user or admin
+
+            if (userRoleFromToken == "admin")
+                return true; // User is an admin
+            else 
+                return false; // User its not an admin
+
+        }
+
         public bool ReviewIdExists(int id)
         {
             return _context.Reviews.Find(id) != null;
@@ -126,13 +139,15 @@ namespace LoLApiNET7.Services
         {
             var reviewToUpdate = _context.Reviews.Find(ReviewId); // Find the review were going to update
 
-            if (CompareUserIds(ReviewId) == false) // If the comparasion between the Ids results false
+            if (CompareUserIds(ReviewId) == true || IsUserAdmin()) // If the comparasion between the Ids results false
+            {
+                reviewToUpdate.Rating = NewRating; // Set the new rating
+
+                _context.Update(reviewToUpdate);
+                return Save();
+            }
+            else
                 return false; // Return false which will cause a server error
-
-            reviewToUpdate.Rating = NewRating; // Set the new rating
-
-            _context.Update(reviewToUpdate);
-            return Save();
         }
     }
 }

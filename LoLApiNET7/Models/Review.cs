@@ -7,7 +7,7 @@ namespace LoLApiNET7.Models
     {
         [Key]
         public int Review_id { get; set; }
-        public string? Title { get; set; } //Title its not required. If title not provided the review will take the first word of the text
+        public string? Title { get; set; } //Title its not required. If title not provided the review will take the first 16 characters of the text
         public string? Text { get; set; }
         public DateTime Created { get; set; }
         //[Column(TypeName = "tinyint")]

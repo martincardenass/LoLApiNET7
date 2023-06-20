@@ -12,7 +12,8 @@ namespace LoLApiNET7.Services
         ICollection<User> GetUsers();
         User GetUser(string username);
         string CreateToken(User user);
-        int DecodeToken(string token);
+        int DecodeToken(string token); // This decodes the tokens user ID
+        string DecodeTokenRole(string token); // This decodes the tokens role
         //string DecodeToken(JwtSecurityToken securityToken);
         string GetPassword(string username);
         User Authenticate(UserDto user);
@@ -148,6 +149,18 @@ namespace LoLApiNET7.Services
 
             //and we return the integer.
             return userIdInt;
+        }
+
+        public string DecodeTokenRole(string token)
+        {
+            JwtSecurityTokenHandler tokenHandler = new(); // Creates a new instance of the jwtsectokenhandl class
+            JwtSecurityToken jwtToken = tokenHandler.ReadJwtToken(token);
+
+            // Create a string that gets the value of the ROLE stored in the token
+            string roleString = jwtToken.Claims.FirstOrDefault(r => r.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+
+            // In this case we return a string
+            return roleString;
         }
     }
 }
