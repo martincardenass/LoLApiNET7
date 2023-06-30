@@ -70,6 +70,21 @@ namespace LoLApiNET7.Controllers
             return Ok(region);
         }
 
+        [HttpGet("count")]
+        [ProducesResponseType(200, Type = typeof(RegionChampionsCount))]
+        [ProducesResponseType(400)]
+        public IActionResult GetRegionChampionsCounts()
+        {
+            var regions = _regionService.GetRegionChampionsCounts();
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            return Ok(regions);
+        }
+
         [HttpPost]
         [Authorize(Policy = "UserAllowed")]
         [ProducesResponseType(204)]

@@ -78,7 +78,7 @@ namespace LoLApiNET7.Controllers
                 Champion_id = champion.Champion_id,
                 Name = champion.Name,
                 Release_date = champion.Release_date,
-                Image = champion.Image,
+                Image = champion.Image
             };
 
             if (!ModelState.IsValid)
@@ -102,10 +102,12 @@ namespace LoLApiNET7.Controllers
 
             var championDto = new ChampionDto
             {
-                Champion_id = champion.Champion_id,
+                Champion_id = champion.Champion_Id,
                 Name = champion.Name,
-                Release_date = champion.Release_date,
+                Release_date = champion.Release_Date,
                 Image = champion.Image,
+                Region_Name = champion.Region_Name,
+                Role_Name = champion.Role_Name
             };
 
 
@@ -115,6 +117,51 @@ namespace LoLApiNET7.Controllers
             }
 
             return Ok(championDto);
+        }
+
+        [HttpGet("role/id/{roleId}")] // To get the champions by its role ID
+        [ProducesResponseType(200, Type = typeof(IEnumerable<Champion>))]
+        public IActionResult GetChampionsByRole(int roleId)
+        {
+            var championsRole = _championService.GetChampionsByRole(roleId);
+
+            if (!_roleService.RoleIdExists(roleId))
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            return Ok(championsRole);
+        }
+
+        [HttpGet("role/name/{roleName}")] // To get the champions by its role name
+        [ProducesResponseType(200, Type = typeof(IEnumerable<ChampionInfo>))]
+        public IActionResult GetChampionsByRoleName(string roleName)
+        {
+            var championsRole = _championService.GetChampionsByRoleName(roleName);
+
+            if (!_roleService.RoleNameExists(roleName))
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            return Ok(championsRole);
+        }
+
+        [HttpGet("region/name/{regionName}")] // To get the champions by its role name
+        [ProducesResponseType(200, Type = typeof(IEnumerable<Champion>))]
+        public IActionResult GetChampionsByRegionName(string regionName)
+        {
+            var championsRegion = _championService.GetChampionsByRegionName(regionName);
+
+            if(!_regionService.RegionNameExists(regionName))
+                return NotFound();
+
+            if(!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            return Ok(championsRegion);
         }
 
         [HttpPost]

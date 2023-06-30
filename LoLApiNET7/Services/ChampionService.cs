@@ -7,8 +7,11 @@ namespace LoLApiNET7.Services
     {
         ICollection<Champion> GetChampions(); //Get the list of champions
         ICollection<ChampionInfo> GetChampionsInfo(); // Gets the VIEW of the champions. which contains its regions and roles names instead of its ids.
+        ICollection<Champion> GetChampionsByRole(int Role_id); // Gets the champions by their role ID
+        ICollection<ChampionInfo> GetChampionsByRoleName(string name);
+        ICollection<ChampionInfo> GetChampionsByRegionName(string name);
         Champion GetChampionById(int id); //Get a champion by its Id
-        Champion GetChampionByName(string name); //Get a champion by its Name
+        ChampionInfo GetChampionByName(string name); //Get a champion by its Name
         bool ChampionIdExists(int id);
         bool ChampionNameExists(string name);
         bool CreateChampion(int Region_id, int Role_id, Champion champion);
@@ -73,10 +76,10 @@ namespace LoLApiNET7.Services
             return _context.Champions.Where(c => c.Champion_id == id).FirstOrDefault();
         }
 
-        public Champion GetChampionByName(string name)
+        public ChampionInfo GetChampionByName(string name)
         {
             //return JoinedChampionTables().Where(cn => EF.Functions.Like(cn.Name, $"%{name}%")).FirstOrDefault();
-            return _context.Champions.Where(cn => EF.Functions.Like(cn.Name, $"%{name}%")).FirstOrDefault();
+            return _context.ChampionsInfo.Where(cn => EF.Functions.Like(cn.Name, $"%{name}%")).FirstOrDefault();
         }
 
         public ICollection<Champion> GetChampions()
@@ -122,7 +125,7 @@ namespace LoLApiNET7.Services
             if (existingChampion == null)
                 return false;
 
-            existingChampion.Region_id = Region_id; // < set the regioId from query
+            existingChampion.Region_id = Region_id; // < set the regionId from query
             existingChampion.Role_id = Role_id; // < set the role id from query
 
             _context.Update(existingChampion);
@@ -132,6 +135,21 @@ namespace LoLApiNET7.Services
         public ICollection<ChampionInfo> GetChampionsInfo()
         {
             return _context.ChampionsInfo.OrderBy(ci => ci.Champion_Id).ToList();
+        }
+
+        public ICollection<Champion> GetChampionsByRole(int Role_id)
+        {
+            return _context.Champions.Where(rid => rid.Role_id == Role_id).ToList();
+        }
+
+        public ICollection<ChampionInfo> GetChampionsByRoleName(string name) // Fails
+        {
+            return _context.ChampionsInfo.Where(rn => rn.Role_Name == name).ToList();
+        }
+
+        public ICollection<ChampionInfo> GetChampionsByRegionName(string name)
+        {
+            return _context.ChampionsInfo.Where(rn => rn.Region_Name == name).ToList();
         }
     }
 }

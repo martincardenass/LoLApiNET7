@@ -70,6 +70,37 @@ namespace LoLApiNET7.Controllers
             return Ok(role);
         }
 
+        [HttpGet("count")]
+        [ProducesResponseType(200, Type = typeof(RoleChampionsCount))]
+        [ProducesResponseType(400)]
+        public IActionResult GetRoleChampionsCounts()
+        {
+            var roles = _roleService.GetRoleChampionsCounts();
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            return Ok(roles);
+        }
+
+        [HttpGet("count/{roleName}")]
+        [ProducesResponseType(200, Type = typeof(RoleChampionsCount))]
+        [ProducesResponseType(400)]
+        public IActionResult GetRoleAndCountByName(string roleName)
+        {
+            var role = _roleService.GetRoleAndCountByName(roleName);
+
+            if (!_roleService.RoleNameExists(roleName))
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            return Ok(role);
+        }
+
         [HttpPost]
         [Authorize(Policy = "UserAllowed")]
         [ProducesResponseType(204)]

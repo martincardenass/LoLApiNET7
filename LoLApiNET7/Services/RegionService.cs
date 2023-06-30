@@ -6,6 +6,7 @@ namespace LoLApiNET7.Services
     public interface IRegionService
     {
         ICollection<Region> GetRegions(); //Get the list of regions
+        ICollection<RegionChampionsCount> GetRegionChampionsCounts();
         Region GetRegionById(int id); //Gets a region by its Id
         Region GetRegionByName(string name); //Gets a region by its name
         bool RegionIdExists(int id); //Checks if the region exists by its Id
@@ -51,6 +52,11 @@ namespace LoLApiNET7.Services
         public Region GetRegionByName(string name)
         {
             return _context.Regions.Where(rn => EF.Functions.Like(rn.Name, $"%{name}%")).FirstOrDefault();
+        }
+
+        public ICollection<RegionChampionsCount> GetRegionChampionsCounts()
+        {
+            return _context.RegionChampionsCount.OrderBy(rcc => rcc.Name).ToList(); // Order by name
         }
 
         public ICollection<Region> GetRegions()

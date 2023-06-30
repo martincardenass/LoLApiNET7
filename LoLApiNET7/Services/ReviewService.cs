@@ -1,5 +1,4 @@
-﻿using Azure.Core;
-using LoLApiNET7.Models;
+﻿using LoLApiNET7.Models;
 
 namespace LoLApiNET7.Services
 {

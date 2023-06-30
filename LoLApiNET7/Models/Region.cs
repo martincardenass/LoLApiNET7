@@ -8,5 +8,6 @@ namespace LoLApiNET7.Models
         public int Region_id { get; set; }
         public string? Name { get; set; }
         public string? Description { get; set; }
+        public string Emblem { get; set; }
     }
 }

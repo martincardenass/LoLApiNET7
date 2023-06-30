@@ -6,7 +6,9 @@ namespace LoLApiNET7.Services
     public interface IRoleService
     {
         ICollection<Role> GetRoles();
+        ICollection<RoleChampionsCount> GetRoleChampionsCounts();
         Role GetRoleById(int id);
+        RoleChampionsCount GetRoleAndCountByName(string name);
         Role GetRoleByName(string name);
         bool RoleIdExists(int id);
         bool RoleNameExists(string name);
@@ -49,6 +51,16 @@ namespace LoLApiNET7.Services
         public Role GetRoleByName(string name)
         {
             return _context.Roles.Where(rn => EF.Functions.Like(rn.Name, $"%{name}%")).FirstOrDefault();
+        }
+
+        public ICollection<RoleChampionsCount> GetRoleChampionsCounts()
+        {
+            return _context.RoleChampionsCount.OrderBy(rcc => rcc.Name).ToList(); // Order by its name and to list its a view so it does not have an id
+        }
+
+        public RoleChampionsCount GetRoleAndCountByName(string name)
+        {
+            return _context.RoleChampionsCount.Where(rn => EF.Functions.Like(rn.Name, $"%{name}%")).FirstOrDefault();
         }
 
         public ICollection<Role> GetRoles()

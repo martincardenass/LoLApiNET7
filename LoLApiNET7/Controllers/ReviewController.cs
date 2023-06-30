@@ -10,14 +10,12 @@ namespace LoLApiNET7.Controllers
     public class ReviewController : Controller
     {
         private readonly IReviewService _reviewService;
-        private readonly IUserService _userService;
         private readonly IChampionService _championService;
 
-        public ReviewController(IReviewService reviewService, IUserService userService, IChampionService championService)
+        public ReviewController(IReviewService reviewService, IChampionService championService)
         { //injecting userService as well to verify if a user exists before posting the review
             //also inject championService to verify if a champion exists before posting its review
             _reviewService = reviewService;
-            _userService = userService;
             _championService = championService;
         }
 
