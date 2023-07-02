@@ -39,8 +39,7 @@ namespace LoLApiNET7.Controllers
                 {
                     Champion_id = item.Champion_id,
                     Name = item.Name,
-                    Release_date = item.Release_date,
-                    Image = item.Image
+                    Release_date = item.Release_date
                 };
 
                 championsDto.Add(championsMap);
@@ -49,7 +48,7 @@ namespace LoLApiNET7.Controllers
             return Ok(championsDto);
         }
 
-        [HttpGet("ChampionsInfo")]
+        [HttpGet("info")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<ChampionInfo>))]
         public IActionResult GetChampionsInfo()
         {
@@ -90,33 +89,47 @@ namespace LoLApiNET7.Controllers
         }
 
         [HttpGet("name/{champName}")]
-        [ProducesResponseType(200, Type = typeof(Champion))]
+        [ProducesResponseType(200, Type = typeof(ChampionInfo))]
         [ProducesResponseType(400)]
         public IActionResult GetChampionByName(string champName)
         {
             if (!_championService.ChampionNameExists(champName))
-            {
                 return NotFound();
-            }
+
+            var images = _championService.GetChampionImages(champName);
             var champion = _championService.GetChampionByName(champName);
 
             var championDto = new ChampionDto
             {
                 Champion_id = champion.Champion_Id,
                 Name = champion.Name,
+                Image = images.FirstOrDefault(),
+                AdditionalImages = images.Skip(1).ToList(),
                 Release_date = champion.Release_Date,
-                Image = champion.Image,
                 Region_Name = champion.Region_Name,
                 Role_Name = champion.Role_Name
             };
 
-
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             return Ok(championDto);
+        }
+
+        [HttpGet("image/{champName}")]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<ChampionInfo>))]
+        [ProducesResponseType(400)]
+        public IActionResult GetChampionImages(string champName)
+        {
+            var champion = _championService.GetChampionImages(champName);
+
+            if (!_championService.ChampionNameExists(champName))
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            return Ok(champion);
         }
 
         [HttpGet("role/id/{roleId}")] // To get the champions by its role ID

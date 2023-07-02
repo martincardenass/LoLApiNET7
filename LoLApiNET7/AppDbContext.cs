@@ -17,11 +17,15 @@ namespace LoLApiNET7
         public DbSet<RoleChampionsCount> RoleChampionsCount { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Images> Images { get; set; }
+        public DbSet<ChampionsImage> ChampionsImage { get; set; }
+        public DbSet<ReviewView> ReviewView { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<RegionChampionsCount>().HasNoKey(); // RegionChampionsCount is a view that does not have a key.
             modelBuilder.Entity<RoleChampionsCount>().HasNoKey(); // Same as above
+            modelBuilder.Entity<ReviewView>().HasNoKey();
         }
     }
 }

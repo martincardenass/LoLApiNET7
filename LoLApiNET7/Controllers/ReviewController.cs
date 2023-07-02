@@ -47,7 +47,7 @@ namespace LoLApiNET7.Controllers
             return Ok(review);
         }
 
-        [HttpGet("championReview/{championId}")]
+        [HttpGet("review/champion/id/{championId}")]
         [ProducesResponseType(200, Type = typeof(Review))]
         [ProducesResponseType(400)]
         public IActionResult GetReviewsByChampion(int championId)
@@ -61,6 +61,25 @@ namespace LoLApiNET7.Controllers
             var reviewsOfAChamp = _reviewService.GetChampionReviews(championId);
 
             return Ok(reviewsOfAChamp);
+        }
+
+        [HttpGet("review/champion/name/{name}")]
+        [ProducesResponseType(200, Type = typeof(Review))]
+        [ProducesResponseType(400)]
+        public IActionResult GetChampionReviewsByName(string name)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!_championService.ChampionNameExists(name)) // Check if champion exists
+                return BadRequest();
+
+            if (!_reviewService.NameHasReview(name)) // Check if champion has reviews
+                return NotFound();
+
+            var reviews = _reviewService.GetChampionReviewsByName(name);
+
+            return Ok(reviews);
         }
 
         [HttpPost]

@@ -10,8 +10,10 @@ namespace LoLApiNET7.Services
         ICollection<Champion> GetChampionsByRole(int Role_id); // Gets the champions by their role ID
         ICollection<ChampionInfo> GetChampionsByRoleName(string name);
         ICollection<ChampionInfo> GetChampionsByRegionName(string name);
+        List<string> GetChampionImages(string name);
         Champion GetChampionById(int id); //Get a champion by its Id
         ChampionInfo GetChampionByName(string name); //Get a champion by its Name
+        int GetChampionCount(string name);
         bool ChampionIdExists(int id);
         bool ChampionNameExists(string name);
         bool CreateChampion(int Region_id, int Role_id, Champion champion);
@@ -60,8 +62,8 @@ namespace LoLApiNET7.Services
 
         public bool ChampionIdExists(int id)
         {
-            //return _context.Champions.Any(c => c.Champion_id == id); < this does the same thing
-            return _context.Champions.Find(id) != null;
+            return _context.Champions.Any(c => c.Champion_id == id); //< this is better
+            //return _context.Champions.Find(id) != null;
         }
 
         public bool ChampionNameExists(string name)
@@ -134,7 +136,7 @@ namespace LoLApiNET7.Services
 
         public ICollection<ChampionInfo> GetChampionsInfo()
         {
-            return _context.ChampionsInfo.OrderBy(ci => ci.Champion_Id).ToList();
+            return _context.ChampionsInfo.OrderBy(ci => ci.Champion_Id).GroupBy(ci => ci.Champion_Id).Select(group => group.FirstOrDefault()).ToList();  // Filter repeated Ids
         }
 
         public ICollection<Champion> GetChampionsByRole(int Role_id)
@@ -144,12 +146,22 @@ namespace LoLApiNET7.Services
 
         public ICollection<ChampionInfo> GetChampionsByRoleName(string name) // Fails
         {
-            return _context.ChampionsInfo.Where(rn => rn.Role_Name == name).ToList();
+            return _context.ChampionsInfo.Where(rn => rn.Role_Name == name).GroupBy(n => n.Champion_Id).Select(g => g.FirstOrDefault()).ToList(); // Filter repeated Ids
         }
 
         public ICollection<ChampionInfo> GetChampionsByRegionName(string name)
         {
-            return _context.ChampionsInfo.Where(rn => rn.Region_Name == name).ToList();
+            return _context.ChampionsInfo.Where(rn => rn.Region_Name == name).GroupBy(n => n.Champion_Id).Select(g => g.FirstOrDefault()).ToList(); // Filter repeated Ids
+        }
+
+        public int GetChampionCount(string name)
+        {
+            return _context.ChampionsInfo.Where(n => n.Name == name).Count();
+        }
+
+        public List<string> GetChampionImages(string name) // List because we need indexing
+        {
+            return _context.ChampionsInfo.Where(i => i.Name == name).Select(i => i.Image).Take(GetChampionCount(name)).ToList(); // Will only return the image urls
         }
     }
 }

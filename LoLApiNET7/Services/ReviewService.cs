@@ -1,4 +1,5 @@
 ﻿using LoLApiNET7.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace LoLApiNET7.Services
 {
@@ -8,6 +9,9 @@ namespace LoLApiNET7.Services
         Review GetReviewById(int id);
         bool ReviewIdExists(int id);
         Review[] GetChampionReviews(int id);
+        //ReviewView GetReviewByName(string name); // Get a review object by its name Not necessary anymore.
+        ICollection<ReviewView> GetChampionReviewsByName(string name); // Review view to find champions reviews by its name
+        bool NameHasReview(string name);
         bool CreateReview(byte Rating, int ChampionId, Review review);
         bool UpdateReview(int ReviewId, byte NewRating, Review review);
         bool DeleteReview(int ReviewId, Review review); // We need a ReviewId to get the UserId within it. And compare it to the token that is trying to delete it
@@ -47,23 +51,13 @@ namespace LoLApiNET7.Services
         {
             if (string.IsNullOrEmpty(review.Title)) //If no title for the review is provided
             {
-                //string[] words = review.Text.Split(' '); //Separates until the first space
-                //review.Title = words[0]; // assign the first word of text to the value of title
                 string words = review.Text[..16];  //Gets the first 16 words
-                //if(review.Text.Length > 16)
-                //{
-                //    review.Title = words + "...";
-                //}
                 review.Title = words + "..."; //asign the to the title if no title is provided
             }
-
-            //string bearerToken = _accesor.HttpContext.Request.Headers.Authorization.ToString();
-            //bearerToken = bearerToken.Replace("Bearer", "").Trim();
 
             var reviewInsert = new Review()
             {
                 Rating = Rating, // Assign the rating. 0 - 5 TINYINT
-                //User_Id = UserId, // Assign the user who is posting the review. WILL ADD AUTH LATER
                 User_Id = _userService.DecodeToken(GetToken()), //Gets the user directly from the bearer token
                 Champion_id = ChampionId, // Assign the champion who is being reviewed
                 Title = review.Title,
@@ -95,10 +89,26 @@ namespace LoLApiNET7.Services
             return _context.Reviews.Where(r => r.Champion_id == id).ToArray(); //Returns an array of the reviews of a certain champion.
         }
 
+        public ICollection<ReviewView> GetChampionReviewsByName(string name) // Insert the champions name
+        {
+            //var IdFromName = GetReviewByName(name).Champion_Id; // Extract the Id of the chamnpion
+            //var reviewer = GetReviewByName(name).Reviewer;
+
+            //return _context.Reviews.Where(r => r.Champion_id == IdFromName).ToArray(); // Find the reviews with the championId
+            //// Using the name string didnt worked in the view. Why? Idk. But this approach fixed it
+            /// Fixed the error it was because I accidentaly setted the champion_id as the primary key of the view which ofc broke it
+            return _context.ReviewView.Where(n => n.Name == name).ToArray();
+        }
+
         public Review GetReviewById(int id)
         {
             return _context.Reviews.Where(r => r.Review_id == id).FirstOrDefault();
         }
+
+        //public ReviewView GetReviewByName(string name) // Need to create this to extract the champion_id from here
+        //{ Not necessary anymore
+        //    return _context.ReviewView.Where(n => n.Name == name).FirstOrDefault(); // Only returns one. Does not matter. I just want to extract the champion_Id
+        //}
 
         public ICollection<Review> GetReviews()
         {
@@ -122,6 +132,11 @@ namespace LoLApiNET7.Services
             else 
                 return false; // User its not an admin
 
+        }
+
+        public bool NameHasReview(string name) // Check if a Review_Title value of a champ name is null, if it is, the champion does not have reviews.
+        {
+            return _context.ReviewView.Where(n => n.Name == name).Any(r => r.Review_Title != null);
         }
 
         public bool ReviewIdExists(int id)
