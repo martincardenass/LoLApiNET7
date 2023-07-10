@@ -10,6 +10,7 @@ namespace LoLApiNET7.Services
         ICollection<Champion> GetChampionsByRole(int Role_id); // Gets the champions by their role ID
         ICollection<ChampionInfo> GetChampionsByRoleName(string name);
         ICollection<ChampionInfo> GetChampionsByRegionName(string name);
+        ICollection<ChampionInfo> GetRelatedChampions(string regionName, string roleName); // Champions with the same region and role
         List<string> GetChampionImages(string name);
         Champion GetChampionById(int id); //Get a champion by its Id
         ChampionInfo GetChampionByName(string name); //Get a champion by its Name
@@ -24,35 +25,6 @@ namespace LoLApiNET7.Services
 
     public class ChampionService : IChampionService
     {
-        //private IQueryable<Champion> JoinedChampionTables() < code for joining tables
-        //{
-        //    var JoinedTable = _context.Champions
-        //        .Join(
-        //            _context.Regions,
-        //            c => c.Region_id,
-        //            r => r.Region_id,
-        //            (c, r) => new
-        //            {
-        //                Champion = c,
-        //                Region = r
-        //            }
-        //        ).Join(
-        //            _context.Roles,
-        //            joined => joined.Champion.Role_id,
-        //            role => role.Role_id,
-        //            (joined, role) => new Champion
-        //            {
-        //                Champion_id = joined.Champion.Champion_id,
-        //                Name = joined.Champion.Name,
-        //                Release_date = joined.Champion.Release_date,
-        //                Image = joined.Champion.Image,
-        //                //Regions = joined.Region,
-        //                //Roles = new List<Role> { role}
-        //            }
-        //        );
-        //    return JoinedTable;
-        //}
-
         private readonly AppDbContext _context;
 
         public ChampionService(AppDbContext context)
@@ -86,8 +58,6 @@ namespace LoLApiNET7.Services
 
         public ICollection<Champion> GetChampions()
         {
-            //var champs = JoinedChampionTables().ToList();
-            //return champs;
             return _context.Champions.OrderBy(c => c.Champion_id).ToList();
         }
 
@@ -162,6 +132,12 @@ namespace LoLApiNET7.Services
         public List<string> GetChampionImages(string name) // List because we need indexing
         {
             return _context.ChampionsInfo.Where(i => i.Name == name).Select(i => i.Image).Take(GetChampionCount(name)).ToList(); // Will only return the image urls
+        }
+
+        public ICollection<ChampionInfo> GetRelatedChampions(string regionName, string roleName)
+        {
+            return _context.ChampionsInfo.Where(c => c.Region_Name == regionName && c.Role_Name == roleName).GroupBy(ci => ci.Champion_Id).Select(g => g.FirstOrDefault()).ToList();
+            // Returns champions that have a specific Region and Role. And will also filter repeated Ids
         }
     }
 }

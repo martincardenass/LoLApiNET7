@@ -104,10 +104,15 @@ namespace LoLApiNET7.Controllers
                 Champion_id = champion.Champion_Id,
                 Name = champion.Name,
                 Image = images.FirstOrDefault(),
-                AdditionalImages = images.Skip(1).ToList(),
+                AdditionalImages = images.Skip(1).ToList(), // Skips the first image (because we showed it in "Image" and displays the rest as additional images
                 Release_date = champion.Release_Date,
                 Region_Name = champion.Region_Name,
-                Role_Name = champion.Role_Name
+                Region_Emblem = champion.Region_Emblem,
+                Role_Name = champion.Role_Name,
+                Role_Icon = champion.Role_Icon,
+                Champ_Icons = champion.Champ_Icons,
+                Catchphrase = champion.Catchphrase,
+                Description = champion.Description
             };
 
             if (!ModelState.IsValid)
@@ -175,6 +180,27 @@ namespace LoLApiNET7.Controllers
                 return BadRequest(ModelState);
 
             return Ok(championsRegion);
+        }
+
+        [HttpGet("related/{regionName}/{roleName}")]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<ChampionInfo>))]
+        public IActionResult GetRelatedChampions(string regionName, string roleName)
+        {
+            var relatedChampions = _championService.GetRelatedChampions(regionName, roleName);
+
+            if (!_regionService.RegionNameExists(regionName))
+                return NotFound($"The region: '{regionName}' does not exist");
+
+            if (!_roleService.RoleNameExists(roleName))
+                return NotFound($"The role: '{roleName}' does not exist");
+
+            if (relatedChampions.Count == 0) // If no champions met the filter criteria. Example > Ixtal Support. Theres none
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            return Ok(relatedChampions);
         }
 
         [HttpPost]

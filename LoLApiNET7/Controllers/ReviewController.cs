@@ -140,7 +140,7 @@ namespace LoLApiNET7.Controllers
 
             if(!_reviewService.UpdateReview(ReviewId, NewRating, updatedReview))
             {
-                ModelState.AddModelError("", "Something went wrong while updating the review");
+                ModelState.AddModelError("", "Something went wrong while updating the review. Are you trying to modify someone else review?");
                 return StatusCode(500, ModelState);
             }
 

@@ -11,18 +11,22 @@ namespace LoLApiNET7.Services
     {
         ICollection<User> GetUsers();
         User GetUser(string username);
+        User GetUserById(int id);
         string CreateToken(User user);
         int DecodeToken(string token); // This decodes the tokens user ID
         string DecodeTokenRole(string token); // This decodes the tokens role
         //string DecodeToken(JwtSecurityToken securityToken);
         string GetPassword(string username);
+        bool ValidateEmail(string email);
         User Authenticate(UserDto user);
-        //string Login(UserDto user);
-        //User EncryptPassword(User user);
         bool UserExists(string username);
         bool UserExistsId(int id); //check if user exists by its Id. Created to use in the reviews.
         bool EmailExists(string email);
+        bool ComparedUserIds(int userId); // Compare the UserId From the token to the UserId thats trying to be modified.
+        bool IsUserAdmin();
+        string GetToken(); // Get the token from the HTTP Auth Headers
         bool CreateUser(User user);
+        bool DeleteUser(User user);
         bool Save();
     }
 
@@ -30,11 +34,13 @@ namespace LoLApiNET7.Services
     {
         private readonly AppDbContext _context;
         private readonly IConfiguration _config;
+        private readonly IHttpContextAccessor _accesor; // HttpContext its to get access to the http headers.
 
-        public UserService(AppDbContext context, IConfiguration config)
+        public UserService(AppDbContext context, IConfiguration config, IHttpContextAccessor accesor) 
         {
             _context = context;
             _config = config;
+            _accesor = accesor;
         }
 
         public string CreateToken(User u)
@@ -88,16 +94,6 @@ namespace LoLApiNET7.Services
         {
             return _context.Users.Where(u => u.Username == username).FirstOrDefault();
         }
-
-        //public User EncryptPassword(User user)
-        //{
-        //    string passwordHash = BCrypt.Net.BCrypt.HashPassword(user.Password); //Encrypt the user's password
-
-        //    //user.Username = user.Username;
-        //    user.Password = passwordHash;
-
-        //    return user;
-        //}
 
         public ICollection<User> GetUsers()
         {
@@ -161,6 +157,71 @@ namespace LoLApiNET7.Services
 
             // In this case we return a string
             return roleString;
+        }
+
+        public bool DeleteUser(User user)
+        {
+            if (ComparedUserIds(user.User_Id) || IsUserAdmin()) // Admins can delete any user. But they can delete other admins. Will fix that later
+            {
+                _context.Remove(user); // If User Ids are the same, delete
+                return Save(); // And save
+            }
+            else
+                return false; // If not, return false and get server error
+        }
+
+        public User GetUserById(int id)
+        {
+            return _context.Users.Where(u => u.User_Id == id).FirstOrDefault();
+        }
+
+        public bool ValidateEmail(string email)
+        {
+            string[] validateEmail = { ".com", ".net", ".org", ".edu", ".mil", ".co", ".us", ".io" }; // We validate if any of this values are present
+
+            bool isEmailValid = false;
+
+            foreach (var item in validateEmail)
+            {
+                if (email.Contains(item))
+                {
+                    isEmailValid = true;
+                    break; // No need to iterate over the remaning values when we notice the email has a valid value
+                }
+            }
+
+            return isEmailValid; // returns true if email is valid and false if email its 
+        }
+
+        public bool ComparedUserIds(int userId)
+        {
+            var user = _context.Users.Find(userId);
+
+            var idFromToken = DecodeToken(GetToken()); // Get the user id from the token
+            var idFromUser = user.User_Id; // Get the user id from the user object created above
+
+            if (idFromUser != idFromToken)
+                return false; // Will cause server error
+            else
+                return true; // If they do match, return true
+        }
+
+        public string GetToken()
+        {
+            string bearerToken = _accesor.HttpContext.Request.Headers.Authorization.ToString(); // Get the token from the Authorization Headers
+            bearerToken = bearerToken.Replace("Bearer", "").Trim(); // Its gote some characters that we dont need. We remove them
+
+            return bearerToken; // Return the token
+        }
+
+        public bool IsUserAdmin()
+        {
+            string userRoleFromToken = DecodeTokenRole(GetToken()).ToString();
+
+            if (userRoleFromToken == "admin")
+                return true; // User is an admin
+            else
+                return false; // User its not an admin
         }
     }
 }

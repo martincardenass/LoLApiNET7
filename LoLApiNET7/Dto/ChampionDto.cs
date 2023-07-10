@@ -8,6 +8,11 @@
         public string? Image { get; set; }
         public ICollection<string>? AdditionalImages { get; set; }
         public string Region_Name { get; set; }
+        public string Region_Emblem { get; set; }
         public string Role_Name { get; set; }
+        public string Role_Icon { get; set; }
+        public string Champ_Icons { get; set; }
+        public string Catchphrase { get; set; }
+        public string Description { get; set; }
     }
 }
