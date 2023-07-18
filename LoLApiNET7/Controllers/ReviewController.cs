@@ -11,12 +11,14 @@ namespace LoLApiNET7.Controllers
     {
         private readonly IReviewService _reviewService;
         private readonly IChampionService _championService;
+        private readonly IUserService _userService;
 
-        public ReviewController(IReviewService reviewService, IChampionService championService)
+        public ReviewController(IReviewService reviewService, IChampionService championService, IUserService userService)
         { //injecting userService as well to verify if a user exists before posting the review
             //also inject championService to verify if a champion exists before posting its review
             _reviewService = reviewService;
             _championService = championService;
+            _userService = userService;
         }
 
         [HttpGet]
@@ -63,6 +65,24 @@ namespace LoLApiNET7.Controllers
             return Ok(reviewsOfAChamp);
         }
 
+        [HttpGet("{username}/reviews/")]
+        [ProducesResponseType(200, Type = typeof(ReviewView[]))]
+        [ProducesResponseType(400)]
+        public IActionResult GetReviewsByUser(string username)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if(!_userService.UserExists(username))
+                return NotFound("The username does not exist");
+
+            // Add error catching when user has no reviews yet
+
+            var reviews = _reviewService.GetReviewsByUser(username);
+
+            return Ok(reviews);
+        }
+
         [HttpGet("review/champion/name/{name}")]
         [ProducesResponseType(200, Type = typeof(Review))]
         [ProducesResponseType(400)]
@@ -82,7 +102,23 @@ namespace LoLApiNET7.Controllers
             return Ok(reviews);
         }
 
-        [HttpPost]
+        [HttpGet("view/id/{id}")]
+        [ProducesResponseType(200, Type = typeof(ReviewView))]
+        [ProducesResponseType(400)]
+        public IActionResult GetReviewsById(int id)
+        {
+            if (!_reviewService.ReviewIdExists(id))
+                return BadRequest();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var review = _reviewService.GetReviewsById(id); // Will return the review VIEW which contains actual data instead of references to another table
+
+            return Ok(review);
+        }
+
+        [HttpPost] // Post with Champion Id
         [Authorize(Policy = "UserAllowed")] // Only logged users can post reviews
         [ProducesResponseType(204)] // No content response type
         [ProducesResponseType(400)] // Bad request
@@ -110,6 +146,34 @@ namespace LoLApiNET7.Controllers
             return NoContent();
         }
 
+        [HttpPost("post/{championName}")] // Post with Champion Name
+        [Authorize(Policy = "UserAllowed")] // Only logged users can post reviews
+        [ProducesResponseType(204)] // No content response type
+        [ProducesResponseType(400)] // Bad request
+        [ProducesResponseType(401)]
+        public IActionResult CreateReviewWithChampionName([FromQuery] byte rating, string championName, [FromBody] Review review)
+        {
+            if (string.IsNullOrEmpty(review.Text) || review.Text.Length < 16)
+                return BadRequest("Review lenght must be at least 16 characters");
+
+            if (rating > 5) // my tinyint max value is 5. check if greater than 5
+                return BadRequest("Rating can only contain numbers in the range of 0 to 5");
+
+            if(!_championService.ChampionNameExists(championName))
+                return BadRequest("The champion you're trying to review does not exist");
+
+            if(!_reviewService.CreateReviewWithChampionName(rating, championName, review))
+            {
+                ModelState.AddModelError("", "Sorry. Something went wrong while creating this review");
+                return StatusCode(500, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            return Ok("Review added");
+        }
+
         [HttpPatch("{reviewId}")]
         [Authorize(Policy = "UserAllowed")] // Only logged users can edit their reviews
         [ProducesResponseType(204)] // No content response type
@@ -127,7 +191,10 @@ namespace LoLApiNET7.Controllers
                 var errorMsg = $"The review {ReviewId} does not exist";
                 return NotFound(new { Message = errorMsg });
             }
-            
+
+            if (string.IsNullOrEmpty(updatedReview.Text) || updatedReview.Text.Length < 16)
+                return BadRequest("Review lenght must be at least 16 characters");
+
             string ratingFromQuery = HttpContext.Request.Query["NewRating"]; // Gets the NewRating value from query as a string
             var reviewMap = _reviewService.GetReviewById(ReviewId); // Getting the original review before its modified
 
@@ -147,7 +214,7 @@ namespace LoLApiNET7.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            return NoContent();
+            return Ok("Review updated correctly");
         }
 
         [HttpDelete("id/{reviewId}")]

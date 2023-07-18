@@ -10,8 +10,11 @@ namespace LoLApiNET7.Services
         bool ReviewIdExists(int id);
         Review[] GetChampionReviews(int id);
         ICollection<ReviewView> GetChampionReviewsByName(string name); // Review view to find champions reviews by its name
+        ReviewView GetReviewsById(int id);
+        ReviewView[] GetReviewsByUser(string username); 
         bool NameHasReview(string name);
         bool CreateReview(byte Rating, int ChampionId, Review review);
+        bool CreateReviewWithChampionName(byte rating, string championName, Review review);
         bool UpdateReview(int ReviewId, byte NewRating, Review review);
         bool DeleteReview(int ReviewId, Review review); // We need a ReviewId to get the UserId within it. And compare it to the token that is trying to delete it
         bool CompareUserIds(int ReviewId);
@@ -21,12 +24,13 @@ namespace LoLApiNET7.Services
     {
         private readonly AppDbContext _context;
         private readonly IUserService _userService;
+        private readonly IChampionService _championService;
 
-        public ReviewService(AppDbContext context, IUserService userService) // Injecting the services that we need
+        public ReviewService(AppDbContext context, IUserService userService, IChampionService championService) // Injecting the services that we need
         {
             _context = context;
             _userService = userService;
-
+            _championService = championService;
         }
 
         public bool CompareUserIds(int ReviewId)
@@ -58,6 +62,31 @@ namespace LoLApiNET7.Services
                 Title = review.Title,
                 Text = review.Text,
                 Created = DateTime.Now, // Data of creation will be current date
+            };
+
+            _context.Add(reviewInsert);
+
+            return Save();
+        }
+
+        public bool CreateReviewWithChampionName(byte rating, string championName, Review review)
+        {
+            var champion = _championService.GetChampionByName(championName); // Gets the champion object by its name
+
+            if (string.IsNullOrEmpty(review.Title))
+            {
+                string words = review.Text[..16]; 
+                review.Title = words + "...";
+            }
+
+            var reviewInsert = new Review()
+            {
+                Rating = rating,
+                User_Id = _userService.DecodeToken(_userService.GetToken()),
+                Champion_id = champion.Champion_Id, // Extract the ID from the champion object of above
+                Title = review.Title,
+                Text = review.Text,
+                Created = DateTime.Now
             };
 
             _context.Add(reviewInsert);
@@ -97,6 +126,16 @@ namespace LoLApiNET7.Services
         public ICollection<Review> GetReviews()
         {
             return _context.Reviews.OrderBy(r => r.Review_id).ToList();
+        }
+
+        public ReviewView GetReviewsById(int id)
+        {
+            return _context.ReviewView.Where(r => r.Review_Id == id).FirstOrDefault();
+        }
+
+        public ReviewView[] GetReviewsByUser(string username)
+        {
+            return _context.ReviewView.Where(u => u.Reviewer == username).ToArray();
         }
 
         public bool NameHasReview(string name) // Check if a Review_Title value of a champ name is null, if it is, the champion does not have reviews.

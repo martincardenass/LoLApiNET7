@@ -9,5 +9,6 @@ namespace LoLApiNET7.Models
         public string? Name { get; set; }
         public string? Description { get; set; }
         public string Emblem { get; set; }
+        public string Background { get; set; }
     }
 }

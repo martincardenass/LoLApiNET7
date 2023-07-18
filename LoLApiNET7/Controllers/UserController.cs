@@ -31,12 +31,42 @@ namespace LoLApiNET7.Controllers
                 {
                     User_Id = user.User_Id,
                     Username = user.Username,
-                    Role = user.Role
+                    Role = user.Role,
+                    ProfilePicture = user.ProfilePicture
                 };
                 usersList.Add(usersMap);
             }
 
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             return Ok(usersList);
+        }
+
+        [HttpGet("users/{username}")]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<User>))]
+        public IActionResult GetUser(string username)
+        {
+            if (!_userService.UserExists(username))
+                return NotFound("This username does not exist");
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var user = _userService.GetUser(username);
+
+            // Mapping everything but the password
+            var userDto = new User
+            {
+                User_Id = user.User_Id,
+                Username = user.Username,
+                Email = user.Email,
+                Created = user.Created,
+                Role = user.Role,
+                ProfilePicture = user.ProfilePicture
+            };
+
+            return Ok(userDto);
         }
 
         [HttpPost("register")]
